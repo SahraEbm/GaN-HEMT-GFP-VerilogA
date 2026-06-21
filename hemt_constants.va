@@ -1,0 +1,43 @@
+// *****************************************************************************
+// *  HEMT with Gate Field Plate MODEL released by Sahra Ebrahimmagham         *
+// File:        hemt_constants.va
+// Version:     1.0.0
+// Date:        2026-06-20
+///
+//  Developed by:
+//
+//  * Sahra Ebrahimmagham (Researcher, AUT)
+//  * Dr. Majid Shalchian (Assistant Professor, AUT)
+//  * Dr. Farzan Jazaeri (Researcher, EPFL)
+//  
+//  Affiliations:
+//  
+//  * Amirkabir University of Technology (AUT)
+//  * École Polytechnique Fédérale de Lausanne (EPFL)
+//  
+//
+//  ## License
+//
+//This project is released under the **MIT License**.
+//
+//See `LICENSE` file for details.
+// *****************************************************************************
+//
+
+`define EXPL_THRESHOLD  80.0
+`define MAX_EXPL        5.540622384e34
+`define MIN_EXPL        1.804851387e-35
+`define N_MINLOG        1.0e-38
+`define DELTA_1         0.02
+`define Oneby3          0.33333333333333333
+
+`define type_n          1
+`define type_p         -1
+`define q               1.60219e-19
+`define EP0             8.85418e-12
+`define Kb_q            8.617087e-5
+`define me              9.11e-31
+`define PI              3.14159
+
+// End of hemt_constants.va
+// *****************************************************************************

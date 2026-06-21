@@ -1,0 +1,338 @@
+//
+//******************************************************************************************
+////  GaN HEMT Extrinsic Diodes + Temperature-Dependent Junction Model
+//  Part of: GaN HEMT with Gate Field Plate Compact Model (Verilog-A)
+//
+//  Version      : v1.0.0
+//  Release Date : 2026-06-19
+//
+//  Description:
+//      This module implements the source and drain junction diodes of a GaN
+//      HEMT device including:
+//          - Thermally-scaled saturation currents
+//          - High-field breakdown modulation
+//          - Trap-assisted tunneling components
+//          - Nonlinear depletion capacitance (charge-based formulation)
+//
+//      The formulation is consistent with physics-based compact modeling
+//      approaches used in EPFL-style GaN HEMT models.
+//
+//  Developed by:
+//      Sahra Ebrahimmagham (Reseacher, AUT)
+//      Dr. Majid Shalchian (Assistant Professor, AUT)
+//      Dr. Farzan Jazzeri (Researcher, EPFL)
+//
+//  License: MIT License
+//
+//*******************************************************************************************
+//
+//***********************************************
+//
+//  HEMT JUNCTION DIODE MODEL (SOURCE + DRAIN TERMINALS)
+//
+//***********************************************
+//
+//
+//***********************************************
+//
+// SOURCE-SIDE HEMT JUNCTION DIODE CURRENT
+//
+//***********************************************
+//
+	is_hemt_s 		= jss_t * as + jssws_t * ps + jsswgs_t * WeffNF;
+	tmp_hemt 		= rT / (UT * NJS);
+	arg_s 		= - v_sbj_hemt * tmp_hemt;
+	f_breakdown_s_hemt 	= 1.0 + XJBVS * exp(-(-v_sbj_hemt + BVS) * tmp_hemt); // NOTE: Breakdown effect
+	isb_hemt 		= is_hemt_s * (1.0 - exp(arg_s)) * f_breakdown_s_hemt;
+	//
+//***********************************************
+//
+// SOURCE-SIDE TRAP-ASSISTED CURRENT
+//
+//***********************************************
+//
+	tmp_hemt 		= v_sbj_hemt * rT / UT;
+	isb_tun_hemt 	= as * jtss_t * (exp(tmp_hemt / njtss_t * VTSS / max(VTSS + v_sbj_hemt,1.0E-3)) - 1.0) + ps * jtssws_t * (exp(tmp_hemt / njtssws_t * VTSSWS / max(VTSSWS + v_sbj_hemt,1.0E-3)) - 1.0) + WeffNF * jtsswgs_t * (exp(tmp_hemt / njtsswgs_t * VTSSWGS / max(VTSSWGS + v_sbj_hemt,1.0E-3)) - 1.0);
+	//
+//***********************************************
+//
+// TOTAL SOURCE-SIDE JUNCTION DIODE CURRENT
+//
+//***********************************************
+//
+	ISBJ_hemt		= isb_hemt + v_sbj_hemt * GMIN + isb_tun_hemt;
+//
+//***********************************************
+//
+// DRAIN-SIDE
+//
+//***********************************************
+//
+	is_d_hemt 		= jsd_t * ad + jsswd_t * pd + jsswgd_t * WeffNF;
+	tmp_hemt 		= rT / (UT * NJD);
+	arg_d 		= - v_dbj_hemt * tmp_hemt;
+	f_breakdown_d_hemt 	= 1.0 + XJBVD * exp(-(-v_dbj_hemt + BVD) * tmp_hemt); // NOTE: Breakdown effect
+	idb_hemt 		= is_d_hemt * (1.0 - exp(arg_d)) * f_breakdown_d_hemt;
+	//
+//***********************************************
+//
+// DRAIN-SIDE TRAP-ASSISTED CURRENT
+//
+//***********************************************
+//
+	tmp_hemt 		= v_dbj_hemt * rT / UT;
+	idb_tun_hemt 	= ad * jtsd_t * (exp(tmp_hemt / njtsd_t * VTSD / max(VTSD + v_dbj_hemt,1.0E-3)) - 1.0) + pd * jtsswd_t * (exp(tmp_hemt / njtsswd_t * VTSSWD / max(VTSSWD + v_dbj_hemt,1.0E-3)) - 1.0) + WeffNF * jtsswgd_t * (exp(tmp_hemt / njtsswgd_t * VTSSWGD / max(VTSSWGD + v_dbj_hemt,1.0E-3)) - 1.0);
+//
+//***********************************************
+//
+// TOTAL DRAIN-SIDE JUNCTION DIODE CURRENT
+//
+//***********************************************
+//
+	IDBJ_hemt 		= idb_hemt + v_dbj_hemt * GMIN + idb_tun_hemt;
+//
+//***********************************************
+//
+// CALCULATION OF THE DIODE-CHARGES (THE CAPACITANCE BEHAVIOUR IS DESCRIBED AS THE DERIVATIVE OF THE CHARGES)
+//
+//***********************************************
+//
+//
+//***********************************************
+//
+// SOURCE-SIDE CAPACITANCE CHARGES
+//
+//***********************************************
+//
+	if (v_sbj_hemt > 0.0)
+	begin
+		cj_s_hemt 		= cjs_t    * as     * exp( - MJS    * ln(1.0 + v_sbj_hemt / pbs_t   ));
+		cjsw_s_hemt 		= cjsws_t  * ps     * exp( - MJSWS  * ln(1.0 + v_sbj_hemt / pbsbegin : DIODES
+begin :	TEMPERATURE_DIODES
+//
+//***********************************************
+//
+// CALCULATION OF JUNCTION DIODES PARAMETERS, FOR BOTH (SOURCE AND DRAIN) SIDES AS THEY ARE AFFECTED BY TEMPERATURE
+//
+//***********************************************
+//
+// CURRENT PARAMETERS
+//
+//***********************************************
+//
+	tmp_hemt 		= eg_tnom / UTNOM - eg_t / UT; // NOTE: Used in temp_arg_S and temp_arg_D variables
+	temp_arg_S 	= exp((tmp_hemt + XTIS * lnrT) / NJS); // NOTE: Used in jss_t, jssws_t and jsswgs_t variables 
+	temp_arg_D 	= exp((tmp_hemt + XTID * lnrT) / NJD); // NOTE: Used in jsd_t, jsswd_t and jsswgd_t variables 
+	jss_t 		= JSS * temp_arg_S;
+	jssws_t 	= JSSWS * temp_arg_S;
+	jsswgs_t 	= JSSWGS * temp_arg_S;
+	jsd_t 		= JSD * temp_arg_D;
+	jsswd_t 	= JSSWD * temp_arg_D;
+	jsswgd_t 	= JSSWGD * temp_arg_D;
+//
+//***********************************************
+//
+// CAPACITANCE PARAMETERS
+//
+//***********************************************
+//
+	cjs_t 		= CJS * (1.0 + TCJ * dT);
+	cjsws_t 	= CJSWS * (1.0 + TCJSW * dT);
+	cjswgs_t 	= CJSWGS * (1.0 + TCJSWG * dT);
+	cjd_t 		= CJD * (1.0 + TCJ * dT);
+	cjswd_t 	= CJSWD * (1.0 + TCJSW * dT);
+	cjswgd_t 	= CJSWGD * (1.0 + TCJSWG * dT);
+//
+//***********************************************
+//
+// CAPACITANCE VOLTAGE PARAMETERS
+//
+//***********************************************
+//
+	pbs_t 		= PBS - (TPB * dT);
+	pbsws_t 	= PBSWS - (TPBSW * dT);
+	pbswgs_t 	= PBSWGS - (TPBSWG * dT);
+	pbd_t 		= PBD - (TPB * dT);
+	pbswd_t 	= PBSWD - (TPBSW * dT);
+	pbswgd_t 	= PBSWGD - (TPBSWG * dT);
+//
+//***********************************************
+//
+// TRAP-ASSISTED CURERNT PARAMETERS
+//
+//***********************************************
+//
+	tmp_hemt 		= - eg_tnom / UT * (1.0 - rT); // NOTE: Used in jtss_t, jtssws_t, jtsswgs_t, jtsd_t, jtsswd_t and jtsswgd_t variables
+	jtss_t 		= JTSS * exp(tmp_hemt * XTSS); 
+	jtssws_t 	= JTSSWS * exp(tmp_hemt * XTSSWS);
+	jtsswgs_t 	= JTSSWGS * exp(tmp_hemt * XTSSWGS);
+	jtsd_t 		= JTSD * exp(tmp_hemt * XTSD);
+	jtsswd_t 	= JTSSWD * exp(tmp_hemt * XTSSWD);
+	jtsswgd_t 	= JTSSWGD * exp(tmp_hemt * XTSSWGD);
+//
+//***********************************************
+//
+// SLOPE PARAMETER FOR TRAP-ASSISTED CURRENT
+//
+//***********************************************
+//
+	tmp_hemt 		= rT - 1.0; // NOTE: Used in njtss_t, njtssws_t, njtsswgs_t, njtsd_t, njtsswd_t and njtsswgd_t variables
+	njtss_t 	= NJTSS * (1.0 + tmp_hemt * TNJTSS);
+	njtssws_t 	= NJTSSWS * (1.0 + tmp_hemt * TNJTSSWS);
+	njtsswgs_t 	= NJTSSWGS * (1.0 + tmp_hemt * TNJTSSWGS);
+	njtsd_t 	= NJTSD * (1.0 + tmp_hemt * TNJTSD);
+	njtsswd_t 	= NJTSSWD * (1.0 + tmp_hemt * TNJTSSWD);
+	njtsswgd_t 	= NJTSSWGD * (1.0 + tmp_hemt * TNJTSSWGD);
+end // 	TEMPERATURE_DIODES
+//
+//***********************************************
+//
+begin : SCALING_GEOMETRY_JUNCTION_DIODES
+//
+//***********************************************
+//
+//
+//***********************************************
+//
+// CALCULATIONS OF GEOMETRIC CHARACTERISTICS OF THE JUNCTION DIODES
+// AREA AND SIDEWAYS PERIMETER OF BOTH (SOURCE AND DRAIN) SIDES JUNCTIONS ARE CALCULATED 
+// GATESIDE PERIMETER IS ALREADY CALCULATED AND IS EQUAL TO "WeffNF"
+// AS, PS, AD AND PD PARAMETERS OVERRIDE HDIF PARAMETER
+//
+//***********************************************
+//
+	if ((AS == 0.0) && (HDIF > 0.0))
+	begin
+//		if (NF % 2 == 0) // EVEN NUMBER OF FINGERS
+	if (even_nf == NF)
+			as = hdif * Weff * (NF + 2); // NOTE: hdif and Weff are already scaled with SCALE parameter
+		else		 // ODD NUMBER OF FINGERS
+			as = hdif * Weff * (NF + 1); // NOTE: hdif and Weff are already scaled with SCALE parameter
+	end
+	else 					
+		as = AS * SCALE * SCALE;
+
+	if ((PS == 0.0) && (HDIF > 0.0)) 	
+	begin
+//		if (NF % 2 == 0) // EVEN NUMBER OF FINGERS
+       if (even_nf == NF)
+			ps = 2.0 * (hdif * (NF + 2) + Weff); // NOTE: hdif and Weff are already scaled with SCALE parameter
+		else		 // ODD NUMBER OF FINGERS
+			ps = 2.0 * hdif * (NF + 1) + Weff; // NOTE: hdif and Weff are already scaled with SCALE parameter
+	end
+	else
+		ps = PS * SCALE;
+
+	if ((AD == 0.0) && (HDIF > 0.0))
+	begin
+//		if (NF % 2 == 0) // EVEN NUMBER OF FINGERS
+                if (even_nf == NF)
+			ad = hdif * Weff * (NF    ); // NOTE: hdif and Weff are already scaled with SCALE parameter
+		else		 // ODD NUMBER OF FINGERS
+			ad = hdif * Weff * (NF + 1); // NOTE: hdif and Weff are already scaled with SCALE parameter
+	end
+	else
+		ad = AD * SCALE * SCALE;
+
+	if ((PD == 0.0) && (HDIF > 0.0)) 		
+	begin
+//		if (NF % 2 == 0) // EVEN NUMBER OF FINGERS
+                if (even_nf == NF)
+			pd = 2.0 * hdif * NF; // NOTE: hdif and Weff are already scaled with SCALE parameter
+		else		 // ODD NUMBER OF FINGERS
+			pd = 2.0 * hdif * (NF + 1) + Weff; // NOTE: hdif and Weff are already scaled with SCALE parameter
+	end
+	else
+		pd = PD * SCALE;
+end //  SCALING_GEOMETRY_JUNCTION_DIODES
+//
+//***********************************************
+//
+// READING THE INPUT VOLTAGES FOR THE JUNCTION DIODES
+// THE EXACT NODES DEPEND ON THE MODE USED AND THE INTERNAL NODES CREATED.
+//
+//***********************************************
+//
+	v_sbj_hemt =  V(s ,b  );
+	v_dbj_hemt =  V(d ,b  );
+		cjswg_s		= cjswgs_t * WeffNF * exp( - MJSWGS * ln(1.0 + v_sbj_hemt / pbswgs_t));
+		qj_s   		= cjs_t    * as     * pbs_t    * (1.0 - exp((1.0 - MJS)    * ln(1.0 + v_sbj_hemt / pbs_t   ))) / (1.0 - MJS); 
+		qjsw_s  	= cjsws_t  * ps     * pbsws_t  * (1.0 - exp((1.0 - MJSWS)  * ln(1.0 + v_sbj_hemt / pbsws_t ))) / (1.0 - MJSWS); 
+		qjswg_s 	= cjswgs_t * WeffNF * pbswgs_t * (1.0 - exp((1.0 - MJSWGS) * ln(1.0 + v_sbj_hemt / pbswgs_t))) / (1.0 - MJSWGS); 
+	end
+	else
+	begin
+		cj_s_hemt		= cjs_t    * as     * (1.0 - MJS    * v_sbj_hemt / pbs_t   );
+		cjsw_s_hemt		= cjsws_t  * ps     * (1.0 - MJSWS  * v_sbj_hemt / pbsws_t );
+		cjswg_s		= cjswgs_t * WeffNF * (1.0 - MJSWGS * v_sbj_hemt / pbswgs_t);
+		tmp_hemt     	= v_sbj_hemt * v_sbj_hemt;
+		qj_s   		= cjs_t    * as     * (- v_sbj_hemt + MJS    * 0.5 / pbs_t    * tmp_hemt); 
+		qjsw_s  	= cjsws_t  * ps     * (- v_sbj_hemt + MJSWS  * 0.5 / pbsws_t  * tmp_hemt); 
+		qjswg_s 	= cjswgs_t * WeffNF * (- v_sbj_hemt + MJSWGS * 0.5 / pbswgs_t * tmp_hemt); 
+	end
+	CSBJ 		= cj_s_hemt + cjsw_s_hemt + cjswg_s;
+//
+//***********************************************
+//	// NOTE: CALCULATION OF CSBJ (AS WELL AS OF cj_s_hemt, cjsw_s_hemt AND cjswg_s) IS NOT NECESSARY SINCE THE DYNAMICAL BEHAVIOUR IS DESCRIBED BY THE TIME DERIVATIVE OF THE CHARGE "QSBJ"
+//
+//***********************************************
+//
+	QSBJ 		= - (qj_s + qjsw_s + qjswg_s);
+//
+//***********************************************
+//
+// DRAIN-SIDE CAPACITANCE CHARGES
+//
+//***********************************************
+//
+	if (v_dbj_hemt > 0.0)
+	begin
+		cj_d_hemt 		= cjd_t    * ad     * exp( - MJD    * ln(1.0 + v_dbj_hemt / pbd_t   ));
+		cjsw_d_hemt 		= cjswd_t  * pd     * exp( - MJSWD  * ln(1.0 + v_dbj_hemt / pbswd_t ));
+		cjswg_d		= cjswgd_t * WeffNF * exp( - MJSWGD * ln(1.0 + v_dbj_hemt / pbswgd_t));
+		qj_d   		= cjd_t    * ad     * pbd_t    * (1.0 - exp((1.0 - MJD)    * ln(1.0 + v_dbj_hemt / pbd_t   ))) / (1.0 - MJD); 
+		qjsw_d  	= cjswd_t  * pd     * pbswd_t  * (1.0 - exp((1.0 - MJSWD)  * ln(1.0 + v_dbj_hemt / pbswd_t ))) / (1.0 - MJSWD); 
+		qjswg_d 	= cjswgd_t * WeffNF * pbswgd_t * (1.0 - exp((1.0 - MJSWGD) * ln(1.0 + v_dbj_hemt / pbswgd_t))) / (1.0 - MJSWGD); 
+	end
+	else
+	begin
+		cj_d_hemt		= cjd_t    * ad     * (1.0 - MJD    * v_dbj_hemt / pbd_t   );
+		cjsw_d_hemt		= cjswd_t  * pd     * (1.0 - MJSWD  * v_dbj_hemt / pbswd_t );
+		cjswg_d		= cjswgd_t * WeffNF * (1.0 - MJSWGD * v_dbj_hemt / pbswgd_t);
+		tmp_hemt     	= v_dbj_hemt * v_dbj_hemt;
+		qj_d   		= cjd_t    * ad     * (- v_dbj_hemt + MJD    * 0.5 / pbd_t    * tmp_hemt); 
+		qjsw_d  	= cjswd_t  * pd     * (- v_dbj_hemt + MJSWD  * 0.5 / pbswd_t  * tmp_hemt); 
+		qjswg_d 	= cjswgd_t * WeffNF * (- v_dbj_hemt + MJSWGD * 0.5 / pbswgd_t * tmp_hemt); 
+	end
+	CDBJ 		= cj_d_hemt + cjsw_d_hemt + cjswg_d; // NOTE: CALCULATION OF CDBJ (AS WELL AS OF cj_d_hemt, cjsw_d_hemt AND cjswg_d) IS NOT NECESSARY SINCE THE DYNAMICAL BEHAVIOUR IS DESCRIBED BY THE TIME DERIVATIVE OF THE CHARGE "QSBJ"
+	QDBJ 		= - (qj_d + qjsw_d + qjswg_d);
+end //  DIODES
+//
+//***********************************************
+//
+// ASSIGNMENT OF THE DIODE-CHARGES AND DIODE-CURRENTS TO THE RESPECTIVE BRANCES.
+// ACCORDING TO THE MODE OF THE MODEL AND THE INTERNAL NODES USED EACH TIME, THE NODES USED DIFFER.
+//
+//***********************************************
+//
+//
+//***********************************************
+//
+// DIODES IV
+//
+//***********************************************
+//
+	I(d ,b ) 	<+   IDBJ_hemt;
+	I(s ,b ) 	<+   ISBJ_hemt;
+//
+//***********************************************
+//
+// DIODES CV
+//
+//***********************************************
+//
+	I(d ,b ) 	<+  ddt(QDBJ);
+	I(s ,b ) 	<+   ddt(QSBJ);
+
+
+

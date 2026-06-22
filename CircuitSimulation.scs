@@ -1,0 +1,130 @@
+// *****************************************************************************
+// *  HEMT with Gate Field Plate MODEL released by Sahra Ebrahimmagham         *
+// *  Generated for : Spectre                                                  *
+// *****************************************************************************
+//
+//
+// *****************************************************************************
+//
+// ****************************************************************************
+// *  Copyright 2026 Amirkabir UNiversirt of Technology (AUT) & EPFL              *
+// *  All rights reserved.                                                                               *
+// *                                                                                                           *
+// *  Project director: Sahra Ebrahimmagham                                                   *
+// *                                                                                                           *
+// *  Current developers:  Sahra Ebrahimmagham (Researcher, AUT)                     *
+// *                              Dr. Majid Shalchian (Assistant Professor, AUT)              *
+// *                              Dr. Farzan Jazzeri( Researcher, EPFL)                        *
+// *                                                                                                            *
+// *                                                                                                            *
+// *                                                                                                            *
+// ****************************************************************************
+//
+// ****************************************************************************
+// *  Software is distributed as is, completely without warranty or service             *
+// *  support. The Amirkabir University of Technology and EPFL and  their             *       
+// *  its employees  are not liable for the condition or performance                         *
+// *  of the software.                                                                                    *
+// *  The Amirkabir University of Technology and EPFL owns the copyright             *       
+// *  and grants users a perpetual, irrevocable, worldwide, non-exclusive,                 *
+// *  royalty-free license with respect to the software as set forth below.              *
+// *                                                                          *
+// *  AUT and EPFL hereby disclaims all implied warranties.                   *
+// *                                                                          *
+// *  Amirkabir University of Technology and EPFL grants the users the right  *
+// *  to modify, copy, and redistribute the software and documentation,       *
+// *  both within the user's organization and externally, subject to the      *
+// *  following  restrictions:                                                *
+// *                                                                          *
+// *  1. The users agree not to charge for AUT and EPFL code                  *
+// *     itself but may charge for additions, extensions, or support.         *
+// *                                                                          *
+// *  2. In any product based on the software, the users agree to             *
+// *     acknowledge the AUT and EPFL that developed the                      *
+// *     software. This acknowledgment shall appear in the product            *
+// *     documentation.                                                       *
+// *                                                                          *
+// *  3. Redistributions to others of source code and documentation must      *
+// *     retain the copyright notice, disclaimer, and list of conditions.     *
+// *                                                                          *
+// *  4. Redistributions to others in binary form must reproduce the          *
+// *     copyright notice, disclaimer, and list of conditions in the          *
+// *     documentation and/or other materials provided with the               *
+// *     distribution.                                                        *
+// *                                                                          *
+// *  Agreed to on _________Jun. 19, 2026__________                           *
+// *                                                                          *
+// *  By: ____Amirkabir University of Technology and EPFL___                  *
+// *      ____Sahra Ebrahimmagham, Majid Shalchian , Farzan Jazzeri_____________________           *
+// *      ____Researcher, Assistant Professor, Researcher________                         *
+//
+// ****************************************************************************
+//
+// Generated for: spectre
+// Generated on: June 19 2026
+// Design library name: slewrate_circuit_HEMT
+// Design cell name: circuitforHEMTSlewRate
+// Design view name: schematic_SahraEbm
+// ****************************************************************************
+//
+// ****************************************************************************
+//
+simulator lang=spectre
+global 0
+//
+// ****************************************************************************
+//
+// Library name: slewrate_circuit_HEMT
+// Cell name: circuitforHEMTSlewRate
+// View name: schematic_SahraEbm
+//
+// ****************************************************************************
+//
+// Analysis Options
+//
+// ****************************************************************************
+//
+C02 (net012 0) capacitor c=1n
+V05 (net011 0) vsource dc=4.3 type=dc
+V06 (net051 0) vsource dc=1 type=dc
+V14 (net026 0) vsource dc=1 type=dc
+V17 (net019 net012) vsource dc=4.3 type=dc
+V13 (0 net013) vsource dc=0 type=dc
+V8 (net019 net028) vsource dc=0 type=dc
+V2 (net019 0) vsource dc=150 type=dc
+I62 (net036 LS_ON_LS net030) sw_no vth=0.5 ron=1 roff=1e+07 tconv=0 \
+        trise=4e-09 tfall=4e-09 slack=1e-09 vtol=0.01
+I61 (net046 net032 net016) sw_no vth=0.5 ron=1 roff=1e+07 tconv=0 \
+        trise=4e-09 tfall=4e-09 slack=1e-09 vtol=0.01
+I59 (G_HS net037 net018) sw_no vth=0.5 ron=1 roff=1e+07 tconv=0 \
+        trise=4e-09 tfall=4e-09 slack=1e-09 vtol=0.01
+I60 (G_HS LS_ON_HS net029) sw_no vth=0.5 ron=3 roff=1e+07 tconv=0 \
+        trise=4e-09 tfall=4e-09 slack=1e-09 vtol=0.01
+V0 (LS_ON_HS 0) vsource type=pulse val0=0 val1=1 period=10u delay=1n \
+        rise=18n fall=5n width=4.95u
+V1 (LS_ON_LS 0) vsource type=pulse val0=0 val1=1 period=10u delay=5u \
+        rise=26n fall=5n width=4.95u
+I57 (net027 net076 0 0) HEMT_With_GFP 
+I58 (net019 G_HS net017 net017) HEMT_With_GFP 
+E1 (net032 net031 LS_ON_LS 0) vcvs gain=-1.0
+E0 (net037 net036 LS_ON_HS 0) vcvs gain=-1.0
+simulatorOptions options reltol=1e-3 vabstol=1e-6 iabstol=1e-9 temp=85.0 \
+    tnom=27 scalem=1.0 scale=1.0 gmin=1e-9 cmin=1e-15 rforce=1 maxnotes=5 maxwarns=5 \
+    digits=5 cols=80 pivrel=1e-3 sensfile="../psf/sens.output" \
+    checklimitdest=psf 
+tran tran stop=500u write="spectre.ic" writefinal="spectre.fc" \
+    annotate=status maxiters=5 
+finalTimeOP info what=oppoint where=rawfile
+modelParameter info what=models where=rawfile
+element info what=inst where=rawfile
+outputParameter info what=output where=rawfile
+designParamVals info what=parameters where=rawfile
+primitives info what=primitives where=rawfile
+subckts info what=subckts  where=rawfile
+asserts info what=assert  where=rawfile
+extremeinfo info what=all where=logfile extremes=yes
+saveOptions options save=all pwr=all currents=all useprobes=yes \
+    saveahdlvars=all
+ahdl_include "HEMTSwitch.va"
+ahdl_include "HEMT_With_GFP.va"
+

@@ -1,0 +1,128 @@
+
+// *****************************************************************************
+//  GaN HEMT RF Small-Signal Testbench
+//  Part of: GaN HEMT with Gate Field Plate Compact Model (Verilog-A)
+//
+//  Version      : v1.0.0
+//  Release Date : 2026-06-19
+//
+//  Description:
+//      Testbench for RF small-signal characterization.
+//
+//      Supported measurements:
+//
+//          • S-parameters
+//          • Y-parameters
+//          • Current gain (h21)
+//          • MAG / MSG
+//          • fT extraction
+//          • fMAX extraction
+//
+//      AC and S-parameter analyses must be configured in the
+//      simulator environment.
+//
+//
+// ****************************************************************************
+// *  Copyright 2026 Amirkabir UNiversirt of Technology (AUT) & EPFL              *
+// *  All rights reserved.                                                                               *
+// *                                                                                                           *
+// *  Project director: Sahra Ebrahimmagham                                                   *
+// *                                                                                                           *
+// *  Current developers:  Sahra Ebrahimmagham (Researcher, AUT)                   *
+// *                              Dr. Majid Shalchian (Assistant Professor, AUT)              *
+// *                              Dr. Farzan Jazzeri( Researcher, EPFL)                        *
+// *                                                                                                            *
+// *                                                                                                            *
+// *                                                                                                            *
+// ****************************************************************************
+//
+// ****************************************************************************
+// *  Software is distributed as is, completely without warranty or service             *
+// *  support. The Amirkabir University of Technology and EPFL and  their             *       
+// *  its employees  are not liable for the condition or performance                         *
+// *  of the software.                                                                                    *
+// *  The Amirkabir University of Technology and EPFL owns the copyright             *       
+// *  and grants users a perpetual, irrevocable, worldwide, non-exclusive,                 *
+// *  royalty-free license with respect to the software as set forth below.              *
+// *                                                                          *
+// *  AUT and EPFL hereby disclaims all implied warranties.                   *
+// *                                                                          *
+// *  Amirkabir University of Technology and EPFL grants the users the right  *
+// *  to modify, copy, and redistribute the software and documentation,       *
+// *  both within the user's organization and externally, subject to the      *
+// *  following  restrictions:                                                *
+// *                                                                          *
+// *  1. The users agree not to charge for AUT and EPFL code                  *
+// *     itself but may charge for additions, extensions, or support.         *
+// *                                                                          *
+// *  2. In any product based on the software, the users agree to             *
+// *     acknowledge the AUT and EPFL that developed the                      *
+// *     software. This acknowledgment shall appear in the product            *
+// *     documentation.                                                       *
+// *                                                                          *
+// *  3. Redistributions to others of source code and documentation must      *
+// *     retain the copyright notice, disclaimer, and list of conditions.     *
+// *                                                                          *
+// *  4. Redistributions to others in binary form must reproduce the          *
+// *     copyright notice, disclaimer, and list of conditions in the          *
+// *     documentation and/or other materials provided with the               *
+// *     distribution.                                                        *
+// *                                                                          *
+// *  Agreed to on _________Jun. 19, 2026__________                           *
+// *                                                                          *
+// *  By: ____Amirkabir University of Technology and EPFL___                  *
+// *      ____Sahra Ebrahimmagham, Majid Shalchian , Farzan Jazzeri_____________________           *
+// *      ____Researcher, Assistant Professor, Researcher________                         *
+//
+// ****************************************************************************
+//
+`include "constants.vams"
+`include "disciplines.vams"
+//
+//******************************************************************************
+//
+//****************************Important************************************
+//
+// Change this directory based on the directory you choose to save the compact model inside this
+`include "../src/hemt_top.va"
+//
+//******************************************************************************
+//
+// Beginning the Simulation part
+//
+//******************************************************************************
+//
+module rf_s_parameters;
+
+    electrical g, d, s, b;
+
+    parameter real VGS_DC = 0.0;
+    parameter real VDS_DC = 10.0;
+    parameter real VBS_DC = 0.0;
+
+    parameter real VAC = 1.0;
+
+    hemt_top DUT (
+        .g(g),
+        .d(d),
+        .s(s),
+        .b(b)
+    );
+
+    analog begin
+
+        // Gate port excitation
+        V(g,s) <+ VGS_DC + ac_stim("ac", VAC);
+
+        // Drain DC bias
+        V(d,s) <+ VDS_DC;
+
+        // Body connection
+        V(b,s) <+ VBS_DC;
+
+    end
+
+endmodule
+//
+//******************************************************************************
+//
